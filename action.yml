@@ -1,0 +1,37 @@
+name: Check NTP Drift Between Two Servers
+
+description: |
+  GitHub Action to verify the time drift between two NTP servers using the `rkik` Rust crate. 
+  This is useful in CI/CD pipelines that rely on synchronized time sources or where time coherence is important.
+
+inputs:
+  server_a:
+    description: "First NTP server (e.g. 0.pool.ntp.org)"
+    required: true
+  server_b:
+    description: "Second NTP server (e.g. time.cloudflare.com)"
+    required: true
+  max_drift_ms:
+    description: "Maximum allowed drift in milliseconds"
+    required: false
+    default: "50"
+
+runs:
+  using: "composite"
+  steps:
+    - name: Install Rust toolchain
+      shell: bash
+      run: |
+        curl https://sh.rustup.rs -sSf | sh -s -- -y
+        source $HOME/.cargo/env
+
+    - name: Install rkik
+      shell: bash
+      run: |
+        cargo install rkik --force
+
+    - name: Compare NTP servers
+      shell: bash
+      run: |
+        echo "Comparing ${{ inputs.server_a }} with ${{ inputs.server_b }}"
+        rkik --compare "${{ inputs.server_a }}" "${{ inputs.server_b }}" --max-drift "${{ inputs.max_drift_ms }}"
