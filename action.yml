@@ -1,15 +1,15 @@
 name: Check NTP Drift Between Two Servers
 
 description: |
-  GitHub Action to verify the time drift between two NTP servers using the `rkik` Rust crate. 
-  This is useful in CI/CD pipelines that rely on synchronized time sources or where time coherence is important.
+  GitHub Action to verify time drift between two NTP servers using the `rkik` Rust crate.
+  Fails if the drift exceeds a configurable threshold (in milliseconds).
 
 inputs:
   server_a:
-    description: "First NTP server (e.g. 0.pool.ntp.org)"
+    description: "First NTP server (e.g. 0.fr.pool.ntp.org)"
     required: true
   server_b:
-    description: "Second NTP server (e.g. time.cloudflare.com)"
+    description: "Second NTP server (e.g. 1.fr.pool.ntp.org)"
     required: true
   max_drift_ms:
     description: "Maximum allowed drift in milliseconds"
@@ -30,8 +30,15 @@ runs:
       run: |
         cargo install rkik --force
 
-    - name: Compare NTP servers
+    - name: Compare NTP servers and check drift
       shell: bash
       run: |
-        echo "Comparing ${{ inputs.server_a }} with ${{ inputs.server_b }}"
-        rkik --compare "${{ inputs.server_a }}" "${{ inputs.server_b }}" --max-drift "${{ inputs.max_drift_ms }}"
+        source $HOME/.cargo/env
+        echo "Comparing ${{ inputs.server_a }} and ${{ inputs.server_b }}"
+        output=$(rkik --compare "${{ inputs.server_a }}" "${{ inputs.server_b }}" --format json)
+        echo "Raw output: $output"
+        drift=$(echo "$output" | jq -r '.difference_ms')
+        threshold="${{ inputs.max_drift_ms }}"
+        echo "Observed drift: $drift ms"
+        echo "Allowed drift: $threshold ms"
+        awk -v d="$drift" -v t="$threshold" 'BEGIN { exit (d > t ? 1 : 0) }'
