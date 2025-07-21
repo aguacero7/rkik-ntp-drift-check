@@ -2,7 +2,6 @@ name: Check NTP Drift Between Two Servers
 
 description: |
   GitHub Action to verify time drift between two NTP servers using the `rkik` Rust crate.
-  Fails if the drift exceeds a configurable threshold (in milliseconds).
 
 inputs:
   server_a:
