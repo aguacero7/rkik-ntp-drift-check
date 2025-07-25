@@ -29,7 +29,7 @@ jobs:
   ntp-drift:
     runs-on: ubuntu-latest
     steps:
-      - uses: your-github-username/rkik-ntp-drift-check@v1
+      - uses: aguacero7/rkik-ntp-drift-check@v1
         with:
           server_a: "0.fr.pool.ntp.org"
           server_b: "1.fr.pool.ntp.org"
