@@ -27,7 +27,7 @@ runs:
     - name: Install rkik
       shell: bash
       run: |
-        cargo install rkik --force
+        cargo install rkik:0.5.0 --force
 
     - name: Compare NTP servers and check drift
       shell: bash
